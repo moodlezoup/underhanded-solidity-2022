@@ -53,31 +53,30 @@ contract BrokenSeaTest is DSTest {
     }
 
     function testNormal() public {
-        erc20.mint(taker, 1_000_000);
-        erc721.mint(maker, 0);
-
-        cheats.prank(maker);
-        brokensea.createAsk(erc721, 0, erc20, 1_000_000);
-
-        cheats.prank(taker);
-        brokensea.fillAsk(erc721, 0, erc20, 1_000_000);
-
-        assertEq(erc721.ownerOf(0), taker);
-        assertEq(erc20.balanceOf(maker), 1_000_000);
-    }
-
-    function testAttack() public {
-        erc721.mint(taker, 1_000);
-        erc721.mint(maker, 1_000_000);
+        erc721.mint(taker, 420);
         erc20.mint(maker, 1_000_000);
 
         cheats.prank(maker);
-        brokensea.createAsk(erc721, 1_000_000, erc20, 1_000);
+        brokensea.createBid(erc721, 420, erc20, 1_000_000);
 
         cheats.prank(taker);
-        brokensea.fillAsk(ERC721(address(erc20)), 1_000_000, ERC20(address(erc721)), 1_000);
+        brokensea.acceptBid(maker, erc721, 420, erc20, 1_000_000);
 
-        assertEq(erc721.ownerOf(1_000), maker);
+        assertEq(erc721.ownerOf(420), maker);
         assertEq(erc20.balanceOf(taker), 1_000_000);
+    }
+
+    function testAttack() public {
+        erc20.mint(taker, 1_000_000);
+        erc721.mint(maker, 420);
+
+        cheats.prank(maker);
+        brokensea.createBid(erc721, 69, erc20, 1_000_000);
+
+        cheats.prank(taker);
+        brokensea.acceptBid(maker, ERC721(address(erc20)), 69, ERC20(address(erc721)), 420);
+
+        assertEq(erc721.ownerOf(420), taker);
+        assertEq(erc20.balanceOf(maker), 69);
     }
 }
